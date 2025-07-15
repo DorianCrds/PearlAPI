@@ -1,0 +1,176 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  label     String   @unique
+  users     User[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  lastname  String
+  firstname String
+  email     String   @unique
+  password  String
+  roleId    Int?     @map("role_id")
+  role      Role?    @relation(fields: [roleId], references: [id])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  kits   Kit[]
+  orders CustomerOrder[]
+
+  @@map("users")
+}
+
+model Bead {
+  id        Int      @id @default(autoincrement())
+  name      String
+  color     String
+  shape     String
+  material  String
+  sizeMm    Float    @map("size_mm")
+  finish    String
+  unitPrice Float    @map("unit_price")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  stock             Stock?
+  kitComponents     KitComponent[]
+  supplierLines     SupplierOrderLine[]
+  stockMovements    StockMovement[]
+  CustomerOrderLine CustomerOrderLine[]
+
+  @@map("beads")
+}
+
+model Kit {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  isCustom  Boolean  @default(false) @map("is_custom")
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  components KitComponent[]
+  orderLines CustomerOrderLine[]
+
+  @@map("kits")
+}
+
+model KitComponent {
+  kitId    Int @map("kit_id")
+  beadId   Int @map("bead_id")
+  quantity Int
+
+  kit  Kit  @relation(fields: [kitId], references: [id])
+  bead Bead @relation(fields: [beadId], references: [id])
+
+  @@id([kitId, beadId])
+  @@map("kit_components")
+}
+
+model CustomerOrder {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  status    String
+  orderDate DateTime @default(now()) @map("order_date")
+  total     Float?
+
+  user  User                @relation(fields: [userId], references: [id])
+  lines CustomerOrderLine[]
+
+  @@map("customer_orders")
+}
+
+model CustomerOrderLine {
+  id          Int    @id @default(autoincrement())
+  orderId     Int    @map("order_id")
+  productType String @map("product_type")
+  beadId      Int?   @map("bead_id")
+  kitId       Int?   @map("kit_id")
+  quantity    Int
+  unitPrice   Float  @map("unit_price")
+
+  order CustomerOrder @relation(fields: [orderId], references: [id])
+  bead  Bead?         @relation(fields: [beadId], references: [id])
+  kit   Kit?          @relation(fields: [kitId], references: [id])
+
+  @@map("customer_order_lines")
+}
+
+model Stock {
+  beadId    Int  @id @map("bead_id")
+  quantity  Int
+  threshold Int
+  bead      Bead @relation(fields: [beadId], references: [id])
+
+  @@map("stocks")
+}
+
+model StockMovement {
+  id       Int      @id @default(autoincrement())
+  beadId   Int      @map("bead_id")
+  type     String
+  quantity Int
+  source   String
+  sourceId Int?
+  date     DateTime @default(now())
+
+  bead Bead @relation(fields: [beadId], references: [id])
+
+  @@map("stock_movements")
+}
+
+model Supplier {
+  id      Int    @id @default(autoincrement())
+  name    String
+  email   String
+  phone   String
+  address String
+
+  orders SupplierOrder[]
+
+  @@map("suppliers")
+}
+
+model SupplierOrder {
+  id         Int      @id @default(autoincrement())
+  supplierId Int      @map("supplier_id")
+  date       DateTime @default(now())
+  status     String
+
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  lines    SupplierOrderLine[]
+
+  @@map("supplier_orders")
+}
+
+model SupplierOrderLine {
+  id       Int     @id @default(autoincrement())
+  orderId  Int     @map("order_id")
+  beadId   Int     @map("bead_id")
+  quantity Int
+  unitCost Float   @map("unit_cost")
+  received Boolean
+
+  order SupplierOrder @relation(fields: [orderId], references: [id])
+  bead  Bead          @relation(fields: [beadId], references: [id])
+
+  @@map("supplier_order_lines")
+}
