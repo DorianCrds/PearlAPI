@@ -96,7 +96,7 @@ We follow a structured Git branching strategy inspired by Git Flow, with an addi
 
 ## Development Flow
 
-1. Create a new branch from `dev`
+1. Create a new branch from `develop`
 2. Commit your code with meaningful messages using Conventional Commits. 
 3. When done, open a pull request into develop.
 4. After merging into develop, test locally.
