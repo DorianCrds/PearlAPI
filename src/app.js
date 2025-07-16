@@ -25,7 +25,7 @@ app.use(express.json());
 setupSwagger(app);
 
 app.get('/', (req, res) => {
-    res.send('CesiZenApi is running ✅');
+    res.send('PearlApi is running ✅');
 });
 
 const apiV1Router = express.Router();
