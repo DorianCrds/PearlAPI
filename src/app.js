@@ -8,7 +8,7 @@ const app = express();
 
 const userRoutesV1 = require('./routes/v1/userRoutes');
 const roleRoutesV1 = require('./routes/v1/roleRoutes');
-const authRoutesV1 = require('./routes/v1/authRoutes');
+const authRoutesV1 = require('./routes/v1/public/authRoutes');
 
 const authenticate = require('./middlewares/authMiddleware')
 
